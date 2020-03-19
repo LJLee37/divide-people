@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include "install/include/OpenXLSX/OpenXLSX.h"
+#include "libbuild/install/include/OpenXLSX/OpenXLSX.h"
 using namespace std;
 using namespace OpenXLSX;
 
@@ -26,7 +26,7 @@ ExelData_t read_data(const string fileName, const string sheetName)
     {
         vector<char> tempPri;
         for(char j = 'B'; currentSheet.Cell(j + to_string(i)).Value().AsString() != "NA"; j++)
-            tempPri.push_back(currentSheet.Cell(j + to_string(i)).Value().Get<char>);
+            tempPri.push_back(currentSheet.Cell(j + to_string(i)).Value().Get<char>());
         retval.push_back(make_pair(currentSheet.Cell('A' + to_string(i)).Value().AsString(),tempPri));
     }
     return retval;
@@ -62,5 +62,5 @@ int main()
     ExelData_t rawData = read_data(fileName, sheetName);
     show_preference_team(rawData);
     int maxTeamMates{max_teammates()};
-    //
+    cout << "현재 팀 최대 인원수 : " << maxTeamMates;
 }
