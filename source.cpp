@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
-#include "libbuild/install/include/OpenXLSX/OpenXLSX.h"
+#include <xlnt/xlnt.hpp>
 using namespace std;
-using namespace OpenXLSX;
+using namespace xlnt;
 
 //Data types
 //Exel Data type
@@ -16,18 +16,27 @@ void show_preference_team(ExelData_t& sheetData);
 int max_teammates();
 
 //function definitions
-ExelData_t read_data(const string fileName, const string sheetName)
+ExelData_t read_data(const string fileName)
 {
-    XLDocument reading;
-    reading.OpenDocument(fileName);
+    workbook wb;
+    wb.load(fileName);
+    auto reading = wb.active_sheet();
     ExelData_t retval;
-    auto currentSheet = reading.Workbook().Worksheet(sheetName);
-    for (int i = 1; currentSheet.Cell('A' + to_string(i)).Value().AsString() != "NA"; i++)
+    for (auto row : reading.rows())
     {
+        vector<string> temp;
+        for(auto cell : row)
+        {
+            temp.push_back(cell.to_string());
+        }
+        string hakbun = temp.front();
+        reverse(temp.begin(), temp.end());
+        temp.pop_back();
         vector<char> tempPri;
-        for(char j = 'B'; currentSheet.Cell(j + to_string(i)).Value().AsString() != "NA"; j++)
-            tempPri.push_back(currentSheet.Cell(j + to_string(i)).Value().Get<char>());
-        retval.push_back(make_pair(currentSheet.Cell('A' + to_string(i)).Value().AsString(),tempPri));
+        for(auto i : temp)
+            tempPri.push_back(i[0]);
+        reverse(tempPri.begin(),tempPri.end());
+        retval.push_back(make_pair(hakbun,tempPri));
     }
     return retval;
 }
@@ -55,11 +64,9 @@ int main()
 {
     cout << "조원 분배 프로그램입니다." << endl;
     cout << "엑셀 파일 이름을 입력하세요 : ";
-    string fileName, sheetName;
+    string fileName;
     cin >> fileName;
-    cout << "타겟 시트 이름을 입력하세요 : ";
-    cin >> sheetName;
-    ExelData_t rawData = read_data(fileName, sheetName);
+    ExelData_t rawData = read_data(fileName);
     show_preference_team(rawData);
     int maxTeamMates{max_teammates()};
     cout << "현재 팀 최대 인원수 : " << maxTeamMates;
