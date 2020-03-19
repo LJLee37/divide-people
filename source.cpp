@@ -97,11 +97,17 @@ void write_data(const string& fileName, const FinalData_t& finalData)
     workbook wb;
     worksheet writing = wb.active_sheet();
     writing.title("Data");
-
+    for (int i = 0; i < finalData.size(); i++)
+    {
+        writing.cell(cell_reference(i + 1, 1)).value(finalData[i].first);
+        writing.cell(cell_reference(i + 1, 2)).value(finalData[i].second);
+    }
+    wb.save(fileName);
 }
 void show_result(const FinalData_t& finalData)
 {
-    //
+    for (auto i : finalData)
+        cout << i.first << ": " << i.second << "조 입니다." << endl;
 }
 
 //main
