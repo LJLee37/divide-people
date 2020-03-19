@@ -13,8 +13,6 @@
             "args": [
                 "-std=c++14",
                 "${file}",
-                "-Ixlnt/include",
-                "-Lxlnt/lib",
                 "-lxlnt",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}.out"
