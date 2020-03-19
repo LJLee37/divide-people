@@ -34,5 +34,3 @@
 /cmake_install.cmake
 /CMakeFiles/
 /Makefile
-openxlsxbuild/*
-!ioenxlsxbuild/install/*
