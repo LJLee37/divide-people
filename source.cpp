@@ -80,9 +80,10 @@ FinalData_t spread_people(ExcelData_t& people, const int& maxNum)
     vector<string> noMoving;
     for(add_noMoving(people, maxNum, teams, noMoving); noMoving.size() < people.size(); add_noMoving(people, maxNum, teams, noMoving))
     {
+        vector<int>leftSeats;
         for(auto i : teams)
         {
-            //
+            leftSeats.push_back(maxNum - i.size());
         }
         
     }
