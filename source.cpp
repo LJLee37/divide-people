@@ -16,11 +16,13 @@ void show_preference_team(const ExcelData_t& sheetData);
 //get max teammates
 int max_teammates();
 //spread people by their priority
-FinalData_t spread_people(ExcelData_t people, const int& maxNum);
+FinalData_t spread_people(ExcelData_t& people, const int& maxNum);
 //write FinalData_t to an excel file
 void write_data(const string& fileName, const FinalData_t& finalData);
 //show the result of spreading
 void show_result(const FinalData_t& finalData);
+//add people to noMoving
+void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<string>>& teams, vector<string>& noMoving);
 
 //function definitions
 ExcelData_t read_data(const string& fileName)
@@ -65,9 +67,9 @@ int max_teammates()
     int retval{stoi(temp)};
     return retval;
 }
-FinalData_t spread_people(ExcelData_t people, const int& maxNum)
+FinalData_t spread_people(ExcelData_t& people, const int& maxNum)
 {
-    vector<vector<string>> teams ;
+    vector<vector<string>> teams;
     for (int i = 0; i < 5; i++)
         teams.push_back(vector<string>{});
     for (auto i : people)
@@ -75,14 +77,22 @@ FinalData_t spread_people(ExcelData_t people, const int& maxNum)
         auto j = i.second[0];
         teams[j - 'A'].push_back(i.first);
     }
-    vector<int> overNumTeamIndex;
-    for(auto i = 0; i < teams.size(); i++)
-        if(teams[i].size() > maxNum)
-            overNumTeamIndex.push_back(i);
-    while(!overNumTeamIndex.empty())
+    vector<string> noMoving;
+    for(add_noMoving(people, maxNum, teams, noMoving); noMoving.size() < people.size(); add_noMoving(people, maxNum, teams, noMoving))
     {
-        //
+        for(auto i : teams)
+        {
+            //
+        }
+        
     }
+    for(auto i : teams)
+        if(i.size() > maxNum)
+        {
+            cout << "Not possible." << endl;
+            cout << "Abort" << endl;
+            abort();
+        }
     FinalData_t retval;
     for(auto i = 0; i < teams.size(); i++)
     {
@@ -109,6 +119,63 @@ void show_result(const FinalData_t& finalData)
     for (auto i : finalData)
         cout << i.first << ": " << i.second << "조 입니다." << endl;
 }
+void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<string>>& teams, vector<string>& noMoving)
+{
+    for (auto i : teams)
+    {
+        if (i.size() <= maxNum)
+            for (auto j : i)
+            {
+                bool isNoMoving = false;
+                for( auto k : noMoving)
+                    if(j == k)
+                        isNoMoving = true;
+                if(!isNoMoving)
+                    noMoving.push_back(j);
+            }
+        else
+        {
+            for (auto j : i)
+            {
+                for (auto k : people)
+                {
+                    if(j == k.first)
+                    {
+                        if (k.second.size() == 1)
+                        {
+                            bool isNoMoving = false;
+                            for( auto l : noMoving)
+                                if(j == l)
+                                    isNoMoving = true;
+                            if(!isNoMoving)
+                            noMoving.push_back(j);
+                        }
+                    }
+                    else 
+                    {
+                        bool tempFlag = false;
+                        for (auto l : k.second)
+                            if(teams[l].size <= maxNum)
+                            {
+                                tempFlag = true;
+                                break;
+                            }
+                        if(!tempFlag)
+                        {
+                            bool isNoMoving = false;
+                            for( auto l : noMoving)
+                            if(j == l)
+                                isNoMoving = true;
+                            if(!isNoMoving)
+                                noMoving.push_back(j);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 //main
 int main()
@@ -138,7 +205,7 @@ int main()
         cout << "저장할 파일 이름을 입력하세요 : ";
         cin >> fileName;
         write_data(fileName, finalData);
-        cout << "저장을 완료했습니다. ";
+        cout << "저장을 완료했습니다." << endl;
         break;
     case 'N':
     case 'n':

@@ -1,2 +1,2 @@
 https://github.com/tfussell/xlnt/issues/375
-https://github.com/microsoft/vcpkg
+https://github.com/tfussell/xlnt
