@@ -82,15 +82,13 @@ FinalData_t spread_people(ExcelData_t& people, const int& maxNum)
     {
         vector<int>leftSeats;
         for(auto i : teams)
-        {
             leftSeats.push_back(maxNum - i.size());
-        }
         
     }
     for(auto i : teams)
         if(i.size() > maxNum)
         {
-            cout << "Not possible." << endl;
+            cout << "분배가 불가능합니다." << endl;
             cout << "Abort" << endl;
             abort();
         }
