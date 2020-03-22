@@ -83,7 +83,26 @@ FinalData_t spread_people(ExcelData_t& people, const int& maxNum)
         vector<int>leftSeats;
         for(auto i : teams)
             leftSeats.push_back(maxNum - i.size());
-        
+        ExcelData_t moving;
+        for(auto i : people)
+            if((find(noMoving.begin(), noMoving.end(), i.first) != noMoving.end()) || noMoving.back() == i.first)
+                moving.push_back(i);
+        for(auto i : moving)
+        {
+            for(auto j : i.second)
+            {
+                if(leftSeats[j - 'A'])
+                {
+                    for (auto k : teams)
+                    {
+                        auto temp = find(k.begin(), k.end(), i.first);
+                        if((temp != k.end()) || k.back() == i.first)
+                            k.erase(temp);
+                    }
+                    teams[j - 'A'].push_back(i.first);
+                }
+            }
+        }
     }
     for(auto i : teams)
         if(i.size() > maxNum)
@@ -133,11 +152,8 @@ void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<st
                     noMoving.push_back(j);
             }
         else
-        {
             for (auto j : i)
-            {
                 for (auto k : people)
-                {
                     if(j == k.first)
                     {
                         if (k.second.size() == 1)
@@ -149,29 +165,27 @@ void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<st
                             if(!isNoMoving)
                             noMoving.push_back(j);
                         }
-                    }
-                    else 
-                    {
-                        bool tempFlag = false;
-                        for (auto l : k.second)
-                            if(teams[l].size <= maxNum)
-                            {
-                                tempFlag = true;
-                                break;
-                            }
-                        if(!tempFlag)
+                    
+                        else 
                         {
-                            bool isNoMoving = false;
-                            for( auto l : noMoving)
-                            if(j == l)
-                                isNoMoving = true;
-                            if(!isNoMoving)
-                                noMoving.push_back(j);
+                            bool tempFlag = false;
+                            for (auto l : k.second)
+                                if(teams[l].size <= maxNum)
+                                {
+                                    tempFlag = true;
+                                    break;
+                                }
+                            if(!tempFlag)
+                            {
+                                bool isNoMoving = false;
+                                for( auto l : noMoving)
+                                if(j == l)
+                                    isNoMoving = true;
+                                if(!isNoMoving)
+                                    noMoving.push_back(j);
+                            }
                         }
                     }
-                }
-            }
-        }
     }
 }
 
