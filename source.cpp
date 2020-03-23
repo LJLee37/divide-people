@@ -2,11 +2,12 @@
 #include <xlnt/xlnt.hpp>
 using namespace std;
 using namespace xlnt;
+#define DEBUGMODE true
 
 //Data types
 //Excel Data type
 typedef vector<pair<string, vector<char>>> ExcelData_t;
-typedef vector<pair<string, char>> FinalData_t;
+typedef vector<pair<string, string>> FinalData_t;
 
 //function prototypes
 //read an excel file and returns ExcelData_t
@@ -85,23 +86,33 @@ FinalData_t spread_people(ExcelData_t& people, const int& maxNum)
             leftSeats.push_back(maxNum - i.size());
         ExcelData_t moving;
         for(auto i : people)
-            if((find(noMoving.begin(), noMoving.end(), i.first) != noMoving.end()) || noMoving.back() == i.first)
+            if((find(noMoving.begin(), noMoving.end(), i.first) == noMoving.end()) && noMoving.back() != i.first)
                 moving.push_back(i);
         for(auto i : moving)
         {
+            bool moved = false;
             for(auto j : i.second)
             {
-                if(leftSeats[j - 'A'])
+                if(moved)
+                    break;
+                if(leftSeats[(j - 'A')] > 0)
                 {
-                    for (auto k : teams)
+                    for (auto k = 0; k < 5; k++)
                     {
-                        auto temp = find(k.begin(), k.end(), i.first);
-                        if((temp != k.end()) || k.back() == i.first)
-                            k.erase(temp);
+                        auto temp = find(teams[k].begin(), teams[k].end(), i.first);
+                        if((temp != teams[k].end()) || teams[k].back() == i.first)
+                        {
+                            teams[k].erase(temp);
+                            break;
+                        }
                     }
-                    teams[j - 'A'].push_back(i.first);
+                    cout << i.first << endl;
+                    teams[(j - 'A')].push_back(i.first);
+                    moved = true;
                 }
             }
+            if(moved)
+                continue;
         }
     }
     for(auto i : teams)
@@ -116,7 +127,7 @@ FinalData_t spread_people(ExcelData_t& people, const int& maxNum)
     {
         sort(teams[i].begin(),teams[i].end());
         for (auto j : teams[i])
-            retval.push_back(make_pair(j, i + 'A'));
+            retval.push_back(make_pair(j, string{char(i + 'A')}));
     }
     return retval;
 }
@@ -127,8 +138,8 @@ void write_data(const string& fileName, const FinalData_t& finalData)
     writing.title("Data");
     for (int i = 0; i < finalData.size(); i++)
     {
-        writing.cell(cell_reference(i + 1, 1)).value(finalData[i].first);
-        writing.cell(cell_reference(i + 1, 2)).value(finalData[i].second);
+        writing.cell(cell_reference(1, i + 1)).value(finalData[i].first);
+        writing.cell(cell_reference(2, i + 1)).value(finalData[i].second);
     }
     wb.save(fileName);
 }
@@ -170,7 +181,7 @@ void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<st
                         {
                             bool tempFlag = false;
                             for (auto l : k.second)
-                                if(teams[l].size <= maxNum)
+                                if(teams[l].size() <= maxNum)
                                 {
                                     tempFlag = true;
                                     break;
@@ -195,8 +206,10 @@ int main()
 {
     cout << "조원 분배 프로그램입니다." << endl;
     cout << "엑셀 파일 이름을 입력하세요 : ";
-    string fileName;
+    string fileName{"Test_case.xlsx"};
+    #if DEBUGMODE == flase
     cin >> fileName;
+    #endif
     ExcelData_t rawData = read_data(fileName);
     show_preference_team(rawData);
     int maxTeamMates{max_teammates()};
@@ -216,7 +229,11 @@ int main()
     case 'Y':
     case 'y':
         cout << "저장할 파일 이름을 입력하세요 : ";
+        #if DEBUGMODE == true
+        fileName = "a.xlsx";
+        #else
         cin >> fileName;
+        #endif
         write_data(fileName, finalData);
         cout << "저장을 완료했습니다." << endl;
         break;
