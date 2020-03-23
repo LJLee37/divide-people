@@ -2,7 +2,7 @@
 #include <xlnt/xlnt.hpp>
 using namespace std;
 using namespace xlnt;
-#define DEBUGMODE true
+#define DEBUGMODE false
 
 //Data types
 //Excel Data type
