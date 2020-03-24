@@ -1,4 +1,7 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
 #include <xlnt/xlnt.hpp>
 using namespace std;
 using namespace xlnt;
@@ -11,7 +14,7 @@ typedef vector<pair<string, string>> FinalData_t;
 
 //function prototypes
 //read an excel file and returns ExcelData_t
-ExcelData_t read_data(const string& fileName);
+ExcelData_t read_data(string& fileName);
 //show preference of team
 void show_preference_team(const ExcelData_t& sheetData);
 //get max teammates
@@ -26,10 +29,22 @@ void show_result(const FinalData_t& finalData);
 void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<string>>& teams, vector<string>& noMoving);
 
 //function definitions
-ExcelData_t read_data(const string& fileName)
+ExcelData_t read_data(string& fileName)
 {
     workbook wb;
-    wb.load(fileName);
+    redo:
+    try
+    {
+        wb.load(fileName);
+    }
+    catch (const std::exception& ex)
+    {
+        cout << ex.what() << endl;
+        cout << "파일을 찾을 수 없습니다. 파일 이름을 다시 입력해주세요 : ";
+        cin >> fileName;
+        goto redo;
+    }
+    
     auto reading = wb.active_sheet();
     ExcelData_t retval;
     for (auto row : reading.rows())
@@ -111,8 +126,6 @@ FinalData_t spread_people(ExcelData_t& people, const int& maxNum)
                     moved = true;
                 }
             }
-            if(moved)
-                continue;
         }
     }
     for(auto i : teams)
