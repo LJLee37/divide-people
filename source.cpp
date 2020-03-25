@@ -14,7 +14,7 @@ typedef vector<pair<string, string>> FinalData_t;
 
 //function prototypes
 //read an excel file and returns ExcelData_t
-ExcelData_t read_data(string& fileName);
+ExcelData_t read_data(string& fileName, bool checkDuplicate = false);
 //show preference of team
 void show_preference_team(const ExcelData_t& sheetData);
 //get max teammates
@@ -27,9 +27,18 @@ void write_data(const string& fileName, const FinalData_t& finalData);
 void show_result(const FinalData_t& finalData);
 //add people to noMoving
 void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<string>>& teams, vector<string>& noMoving);
+//return if nkoMoving contains person
+bool is_noMoving(vector<string>& noMoving, string& person);
 
 //function definitions
-ExcelData_t read_data(string& fileName)
+bool is_noMoving(vector<string>& noMoving, string& person)
+{
+    for ( auto i : noMoving)
+        if(i == person)
+            return true;
+    return false;
+}
+ExcelData_t read_data(string& fileName, bool checkDuplicate = false)
 {
     workbook wb;
     redo:
@@ -63,6 +72,22 @@ ExcelData_t read_data(string& fileName)
         reverse(tempPri.begin(),tempPri.end());
         retval.push_back(make_pair(hakbun,tempPri));
     }
+    if(checkDuplicate)
+    {
+        sort( retval.begin(), retval.end() );
+        retval.erase( unique( retval.begin(), retval.end() ), retval.end() );
+        for (auto i : retval)
+        {
+            for (auto j : retval)
+        {
+            if(i.first == j.first)
+                if(i != j)
+                {
+                    cout << "경고! 중복되는 학번이 있습니다. 분배 과정에서 프로그램이 멈출 가능성이 있습니다." << endl;
+                    cout << "중복 학번 : " << i.first << endl;
+                }
+        }
+    }}
     return retval;
 }
 void show_preference_team(const ExcelData_t& sheetData)
@@ -101,7 +126,7 @@ FinalData_t spread_people(ExcelData_t& people, const int& maxNum)
             leftSeats.push_back(maxNum - i.size());
         ExcelData_t moving;
         for(auto i : people)
-            if((find(noMoving.begin(), noMoving.end(), i.first) == noMoving.end()) && noMoving.back() != i.first)
+            if(!is_noMoving(noMoving, i.first))
                 moving.push_back(i);
         for(auto i : moving)
         {
@@ -127,6 +152,7 @@ FinalData_t spread_people(ExcelData_t& people, const int& maxNum)
                 }
             }
         }
+        cout << "one loop done" << endl;
     }
     for(auto i : teams)
         if(i.size() > maxNum)
@@ -167,14 +193,10 @@ void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<st
     {
         if (i.size() <= maxNum)
             for (auto j : i)
-            {
-                bool isNoMoving = false;
-                for( auto k : noMoving)
-                    if(j == k)
-                        isNoMoving = true;
-                if(!isNoMoving)
+                if(!is_noMoving(noMoving, j))
+                {    
                     noMoving.push_back(j);
-            }
+                }
         else
             for (auto j : i)
                 for (auto k : people)
@@ -182,12 +204,10 @@ void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<st
                     {
                         if (k.second.size() == 1)
                         {
-                            bool isNoMoving = false;
-                            for( auto l : noMoving)
-                                if(j == l)
-                                    isNoMoving = true;
-                            if(!isNoMoving)
-                            noMoving.push_back(j);
+                            if(!is_noMoving(noMoving, j))
+                            {    
+                                noMoving.push_back(j);
+                            }
                         }
                     
                         else 
@@ -201,12 +221,10 @@ void add_noMoving(const ExcelData_t& people, const int& maxNum, vector<vector<st
                                 }
                             if(!tempFlag)
                             {
-                                bool isNoMoving = false;
-                                for( auto l : noMoving)
-                                if(j == l)
-                                    isNoMoving = true;
-                                if(!isNoMoving)
+                                if(!is_noMoving(noMoving, j))
+                                {    
                                     noMoving.push_back(j);
+                                }
                             }
                         }
                     }
@@ -223,7 +241,27 @@ int main()
     #if DEBUGMODE == flase
     cin >> fileName;
     #endif
-    ExcelData_t rawData = read_data(fileName);
+    cout << "파일에 중복이 있는지 체크하시겠습니까? (Y|n) : ";
+    cout << "이대로 저장하시겠습니까? (Y|n) : ";
+    char chkdpl;
+    cin >> chkdpl;
+    bool check = false;
+    switch (chkdpl)
+    {
+    case 'Y':
+    case 'y':
+        cout << "중복이 있는지 확인합니다..." << endl;
+        check = true;
+        break;
+    case 'N':
+    case 'n':
+        cout << "중복을 확인하지 않습니다. 중복이 있다면 프로그램이 분배과정에서 가만히 있습니다." << endl;
+        break;
+    default:
+        cout << "잘못된 입력입니다. 중복을 확인하지 않습니다."<<endl;
+        break;
+    }
+    ExcelData_t rawData = read_data(fileName, check);
     show_preference_team(rawData);
     int maxTeamMates{max_teammates()};
     cout << "현재 팀 최대 인원수 : " << maxTeamMates << endl;
